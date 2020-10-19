@@ -351,3 +351,6 @@ MigrationBackup/
 
 #Appsettings
 appsettings.json
+
+#jetbrains
+.idea/

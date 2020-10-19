@@ -30,8 +30,8 @@ namespace DiscordBot
         private AppSettings()
         {
             var configurationBuilder = new ConfigurationBuilder();
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
-            configurationBuilder.AddJsonFile(path, false, true);
+            //var path = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+            configurationBuilder.AddJsonFile("appsettings.json", false, true);
 
             var root = configurationBuilder.Build();
             var appSetting = root.GetSection("Bot");
