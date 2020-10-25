@@ -18,7 +18,8 @@ namespace DiscordBot.Modules
 
             string version = "Version 2.0.0\n";
             string uploadonly = "!uploadonly <ChannelID To Post to> : This Text send into this Channel will be Transfered to ChannelID Channel\n\n";
-            string delhistory = "!delHistory <amount to delete> : Deletes x messages in channel\n\n";
+            string delhistory = "!delHistory <amount to delete> : Deletes x messages in channel, " +
+                                "deleting more than 6 Messages will get into RateLimit --> taking very long time due API rate limit\n\n";
             string teamscrambler = "!teamscrambler <rolename To scramble> <amount of Teams> : Scrambles Member of Role into amount of Teams\n\n";
 
 
@@ -70,7 +71,7 @@ namespace DiscordBot.Modules
         {
             var channel = Context.Channel as SocketGuildChannel;
             int amountToDelete = 1; //Delete Message that invoked this function + amount
-
+          
             try
             {
                 amountToDelete += Convert.ToInt32(amount[0]);
@@ -81,13 +82,39 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            var messages =  Context.Channel.GetMessagesAsync(amountToDelete).Flatten();
+            Task.Run(() => deleteTask(amountToDelete,Context));
 
-            foreach (var message in await messages.ToArrayAsync())
+        }
+
+        private async Task deleteTask(int amount, ICommandContext context)
+        {
+            const int LIMIT = 100;
+            
+            int rounds = amount / LIMIT;
+
+            if (amount % LIMIT != 0)
+                rounds++;
+
+            for (int i = 0; i < rounds; i++)
             {
-                await Context.Channel.DeleteMessageAsync(message);
-            }
+                int tempAmount = 0;
+                if (amount > 100)
+                {
+                    amount -= 100;
+                    tempAmount = 100;
+                }
+                else
+                {
+                    tempAmount = amount;
+                }
+                
+                var messages = await  Context.Channel.GetMessagesAsync(tempAmount).FlattenAsync();
 
+                foreach (var message in messages.ToArray())
+                {
+                    await Context.Channel.DeleteMessageAsync(message);
+                }
+            }
         }
         
         [RequireUserPermission(GuildPermission.Administrator)]
