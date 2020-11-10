@@ -113,8 +113,9 @@ namespace DiscordBot.Modules
 
                 foreach (var message in messages.ToArray())
                 {
-                    await Context.Channel.DeleteMessageAsync(message);
-                    Task.Delay(500).Wait();
+                    //await Context.Channel.DeleteMessageAsync(message);
+                    await message.DeleteAsync();
+                    Task.Delay(1000).Wait();
                 }
             }
         }
