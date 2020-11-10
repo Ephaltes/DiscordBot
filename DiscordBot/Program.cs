@@ -16,16 +16,18 @@ namespace DiscordBot
         private DiscordSocketClient _client = null;
         static void Main(string[] args)
         {
-            try
+            while (true)
             {
-                new Program().MainAsync().GetAwaiter().GetResult();
+                try
+                {
+                    new Program().MainAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Task.Delay(5000).Wait();
+                } 
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-
         }
 
         public async Task MainAsync()

@@ -18,12 +18,12 @@ namespace DiscordBot.Modules
 
             string version = "Version 2.0.0\n";
             string uploadonly = "!uploadonly <ChannelID To Post to> : This Text send into this Channel will be Transfered to ChannelID Channel\n\n";
-            string delhistory = "!delHistory <amount to delete> : Deletes x messages in channel, " +
+            string clear = "!clear <amount to delete> : Deletes x messages in channel, " +
                                 "deleting more than 6 Messages will get into RateLimit --> taking very long time due API rate limit\n\n";
             string teamscrambler = "!teamscrambler <rolename To scramble> <amount of Teams> : Scrambles Member of Role into amount of Teams\n\n";
 
 
-            ret = version + uploadonly+delhistory+teamscrambler;
+            ret = version + uploadonly+clear+teamscrambler;
             
             await ReplyAsync("",false,new EmbedBuilder(){Description = ret,Color = Color.Purple}.Build());
         }
@@ -66,7 +66,7 @@ namespace DiscordBot.Modules
         
         
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("delHistory")]
+        [Command("clear")]
         public async Task delHistory(params string[] amount)
         {
             var channel = Context.Channel as SocketGuildChannel;
@@ -75,6 +75,8 @@ namespace DiscordBot.Modules
             try
             {
                 amountToDelete += Convert.ToInt32(amount[0]);
+                if(amountToDelete < 1)
+                    throw new Exception();
             }
             catch (Exception e)
             {
@@ -82,11 +84,10 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            Task.Run(() => deleteTask(amountToDelete,Context));
-
+            Task.Run(() => deleteTask(amountToDelete));
         }
 
-        private async Task deleteTask(int amount, ICommandContext context)
+        private async Task deleteTask(int amount)
         {
             const int LIMIT = 100;
             
@@ -113,6 +114,7 @@ namespace DiscordBot.Modules
                 foreach (var message in messages.ToArray())
                 {
                     await Context.Channel.DeleteMessageAsync(message);
+                    Task.Delay(500).Wait();
                 }
             }
         }
@@ -126,12 +128,15 @@ namespace DiscordBot.Modules
             int teamCount = 0;
             try
             {
-                if (param.Length < 2 || (socketRole = channel.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == param[0].ToLower())) == null)
+                if (param.Length < 2 
+                    || (socketRole = channel.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == param[0].ToLower())) == null)
                 {
                     throw new Exception("Wrong arguments");
                 }
 
                 teamCount = Convert.ToInt32(param[1]);
+                if(teamCount < 1)
+                    throw new Exception();
             }
             catch (Exception e)
             {
@@ -141,20 +146,24 @@ namespace DiscordBot.Modules
             
             var memberList = socketRole.Members.OrderBy(x => Guid.NewGuid()).ToList();
 
-            int team = 1;
-            string message = "";
+            string[] message = new string[teamCount];
+            
             for (int i = 0; i < memberList.Count; i++)
             {
-                if (i % (memberList.Count / teamCount) == 0)
-                {
-                    message += $"\nTeam {team}: \n";
-                    team++;
-                }
-
-                message += $"{memberList[i].Username}\n";
-
+                int team = i % teamCount;
+                message[team] += $"{memberList[i].Username}\n";
             }
-            await Context.Channel.SendMessageAsync(null, false, new EmbedBuilder() {Color=Color.Blue,Description = message}.Build());
+
+            string ret = "";
+            for (int i = 0; i < teamCount; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(message[i]))
+                {
+                    ret += $"\nTeam {i + 1}: \n" + message[i];
+                }
+            }
+            
+            await Context.Channel.SendMessageAsync(null, false, new EmbedBuilder() {Color=Color.Blue,Description = ret}.Build());
         }
         
     }
