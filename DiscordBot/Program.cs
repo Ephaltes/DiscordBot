@@ -14,6 +14,7 @@ namespace DiscordBot
     class Program
     {
         private DiscordSocketClient _client = null;
+        private DiscordSocketConfig _config = null;
         static void Main(string[] args)
         {
             while (true)
@@ -32,11 +33,16 @@ namespace DiscordBot
 
         public async Task MainAsync()
         {
+            _config = new DiscordSocketConfig()
+            {
+                AlwaysDownloadUsers = true
+            };
+
             // You should dispose a service provider created using ASP.NET
             // when you are finished using it, at the end of your app's lifetime.
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
-            using (var services = ConfigureServices())
+            using (var services = ConfigureServices(_config))
             {
                 _client = services.GetRequiredService<DiscordSocketClient>();
 
@@ -45,7 +51,7 @@ namespace DiscordBot
                 services.GetRequiredService<CommandService>().Log += LogAsync;
 
                 AppSettings settings = AppSettings.settings;
-
+                
                 // Tokens should be considered secret data and never hard-coded.
                 // We can read from the environment variable to avoid hardcoding.
                 await _client.LoginAsync(TokenType.Bot, settings.Token);
@@ -63,7 +69,6 @@ namespace DiscordBot
 
         private Task Client_MessageReceived(SocketMessage msg)
         {
-
             if (msg.Author.IsBot || !SavedSettings.settings.GetUploadOnlyList().ContainsKey(msg.Channel.Id) 
                                  || SavedSettings.settings.GetUploadOnlyList().ContainsKey(msg.Channel.Id) 
                                  && msg.Attachments.Count > 0)
@@ -122,10 +127,10 @@ namespace DiscordBot
             return Task.CompletedTask;
         }
 
-        private ServiceProvider ConfigureServices()
+        private ServiceProvider ConfigureServices(DiscordSocketConfig config)
         {
             return new ServiceCollection()
-                .AddSingleton<DiscordSocketClient>()
+                .AddSingleton(new DiscordSocketClient(config))
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<HttpClient>()
