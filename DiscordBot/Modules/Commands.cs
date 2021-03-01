@@ -32,8 +32,6 @@ namespace DiscordBot.Modules
         [Command("UploadOnly")]
         public async Task UploadOnly(params string[] postToChannel)
         {
-            // get user info from the Context
-            var user = Context.User;
             var channelid = Context.Channel.Id;
             ulong postToChannelId;
 
@@ -67,16 +65,18 @@ namespace DiscordBot.Modules
         
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("clear")]
-        public async Task delHistory(params string[] amount)
+        public async Task Clear(params string[] amount)
         {
-            var channel = Context.Channel as SocketGuildChannel;
             int amountToDelete = 1; //Delete Message that invoked this function + amount
           
             try
             {
                 amountToDelete += Convert.ToInt32(amount[0]);
-                if(amountToDelete < 1)
-                    throw new Exception();
+                if (amountToDelete < 1)
+                {
+                    await ReplyAsync("wrong Parameter");
+                    return;
+                }
             }
             catch (Exception e)
             {
@@ -84,63 +84,74 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            Task.Run(() => deleteTask(amountToDelete));
+            Task.Run(() => DeleteTask(amountToDelete)); //dont want to wait, because deleting can take a long time due to ratelimiting
         }
 
-        private async Task deleteTask(int amount)
+        private async Task DeleteTask(int amount)
         {
-            const int LIMIT = 100;
-            
-            int rounds = amount / LIMIT;
-
-            if (amount % LIMIT != 0)
-                rounds++;
-
-            for (int i = 0; i < rounds; i++)
+            try
             {
-                int tempAmount = 0;
-                if (amount > 100)
-                {
-                    amount -= 100;
-                    tempAmount = 100;
-                }
-                else
-                {
-                    tempAmount = amount;
-                }
-                
-                var messages = await  Context.Channel.GetMessagesAsync(tempAmount).FlattenAsync();
+                const double limit = 100.0;
+            
+                double rounds = Math.Ceiling(amount / limit);
 
-                foreach (var message in messages.ToArray())
+                for (int i = 0; i < rounds; i++)
                 {
-                    //await Context.Channel.DeleteMessageAsync(message);
-                    await message.DeleteAsync();
-                    Task.Delay(1000).Wait();
+                    int tempAmount;
+                
+                    if (amount > 100)
+                    {
+                        amount -= 100;
+                        tempAmount = 100;
+                    }
+                    else
+                    {
+                        tempAmount = amount;
+                    }
+                
+                    var messages = await  Context.Channel.GetMessagesAsync(tempAmount).FlattenAsync();
+
+                    foreach (var message in messages.ToArray())
+                    {
+                        //await Context.Channel.DeleteMessageAsync(message);
+                        await message.DeleteAsync();
+                        Task.Delay(1000).Wait();
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+          
         }
         
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("team")]
-        public async Task TeamScrambler(params string[] param)
+        public async Task Team(params string[] param)
         {
             var channel = Context.Channel as SocketGuildChannel;
             SocketRole socketRole;
-            int teamCount = 0;
+            int teamCount;
+            
             try
             {
                 if (param.Length < 2 
-                    || (socketRole = channel.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == param[0].ToLower())) == null)
+                    || (socketRole = channel?.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == param[0].ToLower())) == null) // cant find Group
                 {
                     throw new Exception("Wrong arguments");
                 }
 
                 teamCount = Convert.ToInt32(param[1]);
-                if(teamCount < 1)
-                    throw new Exception();
+                if (teamCount < 1)
+                {
+                    await Context.Channel.SendMessageAsync("Wrong arguments");
+                    return;
+                }
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 await Context.Channel.SendMessageAsync("Wrong arguments");
                 return;
             }
