@@ -13,8 +13,6 @@ namespace DiscordBot
 {
     class Program
     {
-        private DiscordSocketClient _client = null;
-        private DiscordSocketConfig _config = null;
         static void Main(string[] args)
         {
             while (true)
@@ -33,7 +31,7 @@ namespace DiscordBot
 
         public async Task MainAsync()
         {
-            _config = new DiscordSocketConfig()
+            DiscordSocketConfig config = new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true
             };
@@ -42,20 +40,20 @@ namespace DiscordBot
             // when you are finished using it, at the end of your app's lifetime.
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
-            using (var services = ConfigureServices(_config))
+            using (var services = ConfigureServices(config))
             {
-                _client = services.GetRequiredService<DiscordSocketClient>();
+                DiscordSocketClient client = services.GetRequiredService<DiscordSocketClient>();
 
-                _client.Log += LogAsync;
-                _client.MessageReceived += Client_MessageReceived;
+                client.Log += LogAsync;
+                client.MessageReceived += Client_MessageReceived;
                 services.GetRequiredService<CommandService>().Log += LogAsync;
 
                 AppSettings settings = AppSettings.settings;
                 
                 // Tokens should be considered secret data and never hard-coded.
                 // We can read from the environment variable to avoid hardcoding.
-                await _client.LoginAsync(TokenType.Bot, settings.Token);
-                await _client.StartAsync();
+                await client.LoginAsync(TokenType.Bot, settings.Token);
+                await client.StartAsync();
 
                 // Here we initialize the logic required to register our commands.
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
