@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Database;
+using DiscordBot.Entity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot
@@ -15,15 +19,18 @@ namespace DiscordBot
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
+        private readonly IUploadOnlyRepository _uploadOnlyRepository;
 
-        public CommandHandlingService(IServiceProvider services)
+        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands, IUploadOnlyRepository uploadOnlyRepository)
         {
-            _commands = services.GetRequiredService<CommandService>();
-            _discord = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
+            _discord = discord;
+            _commands = commands;
+            _uploadOnlyRepository = uploadOnlyRepository;
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += CommandExecutedAsync;
+            
             // Hook MessageReceived so we can process each message to see
             // if it qualifies as a command.
             _discord.MessageReceived += MessageReceivedAsync;
@@ -34,9 +41,48 @@ namespace DiscordBot
             // Register modules that are public and inherit ModuleBase<T>.
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
+        
+        //old 
+        private async Task<bool> IsMessageInUploadOnlyChannel(SocketMessage msg, IUploadOnlyRepository repository)
+        {
+            var channel = msg.Channel as SocketGuildChannel;
+            var serverid = channel.Guild.Id;
+
+            var uploadOnlyEntity = await repository.GetByChannelId(channel.Id);
+            
+            
+            if (msg.Author.IsBot 
+                || uploadOnlyEntity == null 
+                ||  msg.Attachments.Count > 0)
+                return false;
+
+
+            var channelToPost = channel.Guild.TextChannels.FirstOrDefault(x => x.Id == uploadOnlyEntity.ChannelToPostId);
+
+            if (channelToPost == null)
+            {
+                await msg.Channel.SendMessageAsync("Channel To Post to doesn´t exist.");
+                return true;
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+
+            builder.WithAuthor(msg.Author);
+            builder.WithTimestamp(msg.Timestamp);
+            builder.WithDescription(msg.Content);
+            builder.Color = Color.Gold;
+
+            await channelToPost.SendMessageAsync("", false, builder.Build());
+            await msg.DeleteAsync();
+
+            return true;
+        }
 
         public async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
+            if (await IsMessageInUploadOnlyChannel(rawMessage, _uploadOnlyRepository))
+                return;
+            
             // Ignore system messages, or messages from other bots
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
