@@ -12,6 +12,7 @@ using DiscordBot.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TimeSpanParserUtil;
 
 
 namespace DiscordBot

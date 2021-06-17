@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -26,6 +27,7 @@ namespace DiscordBot.Extensions
             services.AddDbContext<DatabaseContext>(config => 
                 { config.UseSqlite($"DataSource={sqlitePath}"); });
             services.AddTransient<IUploadOnlyRepository, UploadOnlyRepository>();
+            services.AddTransient<IEventRepository, EventRepository>();
         }
     }
 }
