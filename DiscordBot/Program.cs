@@ -1,139 +1,75 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using TimeSpanParserUtil;
 
 
 namespace DiscordBot
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            while (true)
-            {
-                try
-                {
-                    new Program().MainAsync().GetAwaiter().GetResult();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    Task.Delay(5000).Wait();
-                } 
-            }
-        }
+            using IHost host = CreateHostBuilder(args).Build();
 
-        public async Task MainAsync()
-        {
-            DiscordSocketConfig config = new DiscordSocketConfig()
-            {
-                AlwaysDownloadUsers = true
-            };
-
-            // You should dispose a service provider created using ASP.NET
-            // when you are finished using it, at the end of your app's lifetime.
-            // If you use another dependency injection framework, you should inspect
-            // its documentation for the best way to do this.
-            using (var services = ConfigureServices(config))
-            {
-                DiscordSocketClient client = services.GetRequiredService<DiscordSocketClient>();
-
-                client.Log += LogAsync;
-                client.MessageReceived += Client_MessageReceived;
-                services.GetRequiredService<CommandService>().Log += LogAsync;
-
-                AppSettings settings = AppSettings.settings;
-                
-                // Tokens should be considered secret data and never hard-coded.
-                // We can read from the environment variable to avoid hardcoding.
-                await client.LoginAsync(TokenType.Bot, settings.Token);
-                await client.StartAsync();
-
-                // Here we initialize the logic required to register our commands.
-                await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-                bool load = SavedSettings.settings.Load();
-
-                Console.WriteLine($"Loading savedSettings {load}");
-
-                await Task.Delay(-1);
-            }
-        }
-
-        private Task Client_MessageReceived(SocketMessage msg)
-        {
-            if (msg.Author.IsBot || !SavedSettings.settings.GetUploadOnlyList().ContainsKey(msg.Channel.Id) 
-                                 || SavedSettings.settings.GetUploadOnlyList().ContainsKey(msg.Channel.Id) 
-                                 && msg.Attachments.Count > 0)
-                return Task.CompletedTask;
+            IServiceProvider services = host.Services;
             
-            var channel = msg.Channel as SocketGuildChannel;
-            ulong channelToPostToId;
-            SocketTextChannel channelToPost;
+            var configuration = services.GetRequiredService<IConfiguration>();
+            DiscordSocketClient client = services.GetRequiredService<DiscordSocketClient>();
+
+            client.Log += LoggingService.Log;
+            services.GetRequiredService<CommandService>().Log += LoggingService.Log;
+
+            string apiToken = configuration.GetSection("ApiToken").Value;
+
+            // Tokens should be considered secret data and never hard-coded.
+            // We can read from the environment variable to avoid hardcoding.
+            await client.LoginAsync(TokenType.Bot, apiToken);
+            await client.StartAsync();
+
+            // Here we initialize the logic required to register our commands.
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
             
-            SavedSettings.settings.GetUploadOnlyList().TryGetValue(msg.Channel.Id, out channelToPostToId);
-            channelToPost = channel.Guild.TextChannels.FirstOrDefault(x => x.Id == channelToPostToId);
-
-            if (channelToPost == null)
-            {
-                msg.Channel.SendMessageAsync("Channel To Post to doesn´t exist.");
-                return Task.CompletedTask;
-            }
-
-            EmbedBuilder builder = new EmbedBuilder();
-
-            builder.WithAuthor(msg.Author);
-            builder.WithTimestamp(msg.Timestamp);
-            builder.WithDescription(msg.Content);
-            builder.Color = Color.Gold;
-
-            channelToPost.SendMessageAsync("", false, builder.Build());
-            msg.DeleteAsync();
-
-            return Task.CompletedTask;
+            await host.RunAsync();
         }
 
-        private Task LogAsync(LogMessage log)
-        {
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureHostConfiguration(configHost =>
+                {
+                    configHost.SetBasePath(Directory.GetCurrentDirectory());
+                    configHost.AddCommandLine(args);
+                })
+                .ConfigureAppConfiguration((hostContext, configApp) =>
+                {
+                    
+                    var appsettingsPath = "appsettings.json";
 
-            switch (log.Severity)
-            {
-                case LogSeverity.Critical:
-                case LogSeverity.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogSeverity.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogSeverity.Info:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogSeverity.Verbose:
-                case LogSeverity.Debug:
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    break;
-            }
+                    //var t = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
 
-            Console.WriteLine($"{DateTime.Now,-19} [{log.Severity,8}] {log.Source}: {log.Message} {log.Exception}");
-            Console.ResetColor();
+                    var pathFromEnv = Environment.GetEnvironmentVariable("AppSettingsPath");
 
-            return Task.CompletedTask;
-        }
+                    if (!string.IsNullOrEmpty(pathFromEnv))
+                        appsettingsPath = pathFromEnv;
 
-        private ServiceProvider ConfigureServices(DiscordSocketConfig config)
-        {
-            return new ServiceCollection()
-                .AddSingleton(new DiscordSocketClient(config))
-                .AddSingleton<CommandService>()
-                .AddSingleton<CommandHandlingService>()
-                .AddSingleton<HttpClient>()
-                .BuildServiceProvider();
-        }
+                    
+                    configApp.AddJsonFile(appsettingsPath, optional: false);
+                    configApp.AddCommandLine(args);
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddServices(hostContext);
+                });
     }
 }
-
