@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -21,6 +22,11 @@ namespace DiscordBot
     {
         static async Task Main(string[] args)
         {
+            CultureInfo.CurrentCulture = new CultureInfo("de-AT", false);
+            CultureInfo.CurrentUICulture = new CultureInfo( "de-AT", false );
+            Console.WriteLine("CurrentCulture is {0}.", CultureInfo.CurrentCulture.Name);
+            Console.WriteLine("CurrentUICulture is {0}.", CultureInfo.CurrentUICulture.Name);
+            
             using IHost host = CreateHostBuilder(args).Build();
 
             IServiceProvider services = host.Services;
@@ -40,7 +46,7 @@ namespace DiscordBot
 
             // Here we initialize the logic required to register our commands.
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-            
+
             await host.RunAsync();
         }
 
