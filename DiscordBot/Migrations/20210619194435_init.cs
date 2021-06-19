@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DiscordBot.Migrations
 {
-    public partial class TimeEntity : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,11 +11,11 @@ namespace DiscordBot.Migrations
                 name: "EventEntities",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false,defaultValueSql:"NEWID()"),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Date = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ChannelToPostId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    ChannelToPostId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    ServerId = table.Column<ulong>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,10 +36,24 @@ namespace DiscordBot.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UploadOnlyEntities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false,defaultValueSql:"NEWID()"),
+                    ServerId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    ChannelId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    ChannelToPostId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UploadOnlyEntities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EventEntityTimeEntity",
                 columns: table => new
                 {
-                    EventEntitiesId = table.Column<int>(type: "INTEGER", nullable: false),
+                    EventEntitiesId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TimeEntitiesId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -69,6 +83,9 @@ namespace DiscordBot.Migrations
         {
             migrationBuilder.DropTable(
                 name: "EventEntityTimeEntity");
+
+            migrationBuilder.DropTable(
+                name: "UploadOnlyEntities");
 
             migrationBuilder.DropTable(
                 name: "EventEntities");

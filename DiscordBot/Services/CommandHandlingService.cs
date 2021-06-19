@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -20,13 +21,16 @@ namespace DiscordBot
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
         private readonly IUploadOnlyRepository _uploadOnlyRepository;
+        private readonly IEventRepository _eventRepository;
+        private Timer _eventTimer;
 
-        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands, IUploadOnlyRepository uploadOnlyRepository)
+        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands, IUploadOnlyRepository uploadOnlyRepository, IEventRepository eventRepository)
         {
             _services = services;
             _discord = discord;
             _commands = commands;
             _uploadOnlyRepository = uploadOnlyRepository;
+            _eventRepository = eventRepository;
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += CommandExecutedAsync;
@@ -34,19 +38,82 @@ namespace DiscordBot
             // Hook MessageReceived so we can process each message to see
             // if it qualifies as a command.
             _discord.MessageReceived += MessageReceivedAsync;
+
+            InitTimer();
         }
 
+        private void InitTimer()
+        {
+            _eventTimer = new Timer();
+            _eventTimer.AutoReset = false;
+            _eventTimer.Enabled = true;
+            _eventTimer.Interval = 1000 * 10;// 10 sekunden
+            _eventTimer.Elapsed += CheckForEvents;
+        }
+
+        private async void CheckForEvents(Object source, ElapsedEventArgs e)
+        {
+            try
+            {
+                _eventTimer.Stop();
+                var eventList = await _eventRepository.GetAll();
+                if (eventList.Count < 1)
+                {
+                    _eventTimer.Start();
+                    return;
+                }
+
+                foreach (var eventEntity in eventList)
+                {
+                    if (await MessageForEventSent(eventEntity, DateTime.Now,
+                        $"{eventEntity.Name} is now!"))
+                    {
+                        await _eventRepository.Delete(eventEntity.Id);
+                        _eventTimer.Start();
+                        return;
+                    }
+
+                    foreach (var reminderTime in eventEntity.TimeEntities.ToList()) //ToList Because we are modifiyng eventEntity
+                    {
+                        if (!await MessageForEventSent(eventEntity,
+                            DateTime.Now.Add(reminderTime.Time),
+                            $"{eventEntity.Name} is in {reminderTime.Time} !")) continue;
+
+                        eventEntity.TimeEntities.Remove(reminderTime);
+                        await _eventRepository.Update(eventEntity);
+                    }
+                }
+                _eventTimer.Start();
+            }
+            catch (Exception exception)
+            {
+                await LoggingService.Log(new LogMessage(LogSeverity.Critical, nameof(CommandHandlingService), "EventTimer",
+                    exception));
+            }
+        }
+
+        private async Task<bool> MessageForEventSent(EventEntity entity,DateTime timeToSend, string message)
+        {
+            if (entity.Date < timeToSend)
+            {
+                var channel = _discord.GetGuild(entity.ServerId).GetTextChannel(entity.ChannelToPostId);
+                await channel.SendMessageAsync("", false,
+                    new EmbedBuilder() {Description = message, Color = Color.Purple}.Build());
+
+                return true;
+            }
+            return false;
+        }
+        
         public async Task InitializeAsync()
         {
             // Register modules that are public and inherit ModuleBase<T>.
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
         
-        //old 
         private async Task<bool> IsMessageInUploadOnlyChannel(SocketMessage msg, IUploadOnlyRepository repository)
         {
             var channel = msg.Channel as SocketGuildChannel;
-            var serverid = channel.Guild.Id;
 
             var uploadOnlyEntity = await repository.GetByChannelId(channel.Id);
             

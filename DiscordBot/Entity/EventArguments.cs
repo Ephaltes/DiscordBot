@@ -19,14 +19,20 @@ namespace DiscordBot.Entity
         [ArgDescription("Date of the Event")]
         [ArgShortcut("-d")]
         public DateTime Date { get; set; }
-
+        
         [ArgRequired]
         [ArgPosition(2)]
+        [ArgDescription("Time of the Event")]
+        [ArgShortcut("-t")]
+        public TimeSpan Time { get; set; }
+
+        [ArgRequired]
+        [ArgPosition(3)]
         [ArgDescription("Channel to Post Reminder To")]
         [ArgShortcut("-c")]
         public ulong ChannelToPostId { get; set; }
 
-        [ArgPosition(3)]
+        [ArgPosition(4)]
         [ArgDescription("Array of Reminders to occur before Date of the Event")]
         [ArgShortcut("-r")]
         public List<string> RemindersAsString
@@ -72,7 +78,7 @@ namespace DiscordBot.Entity
         {
             var entity = new EventEntity
             {
-                Date = Date,
+                Date = Date.Add(Time),
                 Name = Name,
                 TimeEntities = Reminders,
                 ChannelToPostId = ChannelToPostId

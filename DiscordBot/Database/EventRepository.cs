@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -15,9 +16,14 @@ namespace DiscordBot.Database
             _db = db;
         }
 
-        public async Task<EventEntity?> Get(int id)
+        public async Task<EventEntity?> Get(Guid id)
         {
             return await _db.EventEntities.FindAsync(id);
+        }
+
+        public async Task<List<EventEntity>> GetAll()
+        {
+            return await _db.EventEntities.ToListAsync();
         }
 
         public async Task<bool> Add(EventEntity entity)
@@ -50,12 +56,16 @@ namespace DiscordBot.Database
             }
         }
 
-        public async Task<bool> Delete(EventEntity entity)
+        public async Task<bool> Delete(Guid id)
         {
             try
             {
-                _db.EventEntities.Remove(entity);
-                await _db.SaveChangesAsync();
+                var entity = await _db.EventEntities.FindAsync(id);
+                if (entity != null)
+                {
+                    _db.EventEntities.Remove(entity);
+                    await _db.SaveChangesAsync();
+                }
                 return true;
             }
             catch (Exception e)

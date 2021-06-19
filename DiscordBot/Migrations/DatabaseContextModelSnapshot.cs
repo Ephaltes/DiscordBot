@@ -18,9 +18,9 @@ namespace DiscordBot.Migrations
 
             modelBuilder.Entity("DiscordBot.Entity.EventEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<ulong>("ChannelToPostId")
                         .HasColumnType("INTEGER");
@@ -30,6 +30,9 @@ namespace DiscordBot.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
+
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -52,22 +55,28 @@ namespace DiscordBot.Migrations
 
             modelBuilder.Entity("DiscordBot.Entity.UploadOnlyEntity", b =>
                 {
-                    b.Property<ulong>("ChannelId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("ChannelId")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ChannelToPostId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ChannelId");
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
 
                     b.ToTable("UploadOnlyEntities");
                 });
 
             modelBuilder.Entity("EventEntityTimeEntity", b =>
                 {
-                    b.Property<int>("EventEntitiesId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("EventEntitiesId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("TimeEntitiesId")
                         .HasColumnType("INTEGER");

@@ -8,17 +8,17 @@ using PowerArgs;
 
 namespace DiscordBot.Modules
 {
-    public class DeleteEventCommand : ModuleBase
+    public class DeleteUploadOnlyCommand : ModuleBase
     {
-        private readonly IEventRepository _repository;
+        private readonly IUploadOnlyRepository _repository;
 
-        public DeleteEventCommand(IEventRepository repository)
+        public DeleteUploadOnlyCommand(IUploadOnlyRepository repository)
         {
             _repository = repository;
         }
 
-        [Command("deleteevent")]
-        [Alias("removeevent","devent","revent")]
+        [Command("deleteuploadonly")]
+        [Alias("removeuploadonly","removeuplaad","deleteupload")]
         public async Task DeleteEvent(params string[] param)
         {
             try
@@ -29,11 +29,11 @@ namespace DiscordBot.Modules
                     return;
                 }
                 
-                var eventid = new Guid(param[0]);
+                var uploadonlyid = new Guid(param[0]);
 
-                if (await _repository.Delete(eventid))
+                if (await _repository.Delete(uploadonlyid))
                 {
-                    await ReplyAsync($"Event deleted successful");
+                    await ReplyAsync($"Uploadonly Channel deleted successful");
                     return;
                 }
 

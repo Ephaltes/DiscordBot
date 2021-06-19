@@ -22,6 +22,7 @@ namespace DiscordBot.Modules
         public async Task UploadOnly(params string[] postToChannel)
         {
             var channelid = Context.Channel.Id;
+            var serverid = Context.Guild.Id;
             ulong postToChannelId;
 
             try
@@ -46,7 +47,7 @@ namespace DiscordBot.Modules
             if (await _repository.GetByChannelId(channelid) == null)
             {
                 var entity = new UploadOnlyEntity()
-                    {ChannelId = channelid, ChannelToPostId = postToChannelId};
+                    {ChannelId = channelid, ChannelToPostId = postToChannelId, ServerId = serverid};
 
                 var result = await _repository.Add(entity);
 
