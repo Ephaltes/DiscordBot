@@ -7,7 +7,6 @@ namespace DiscordBot.Modules
 {
     public class ExampleCommand : ModuleBase
     {
-        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("examples")]
         [Alias("example")]
         public async Task Example()
