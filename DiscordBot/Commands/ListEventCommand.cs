@@ -37,11 +37,21 @@ namespace DiscordBot.Modules
 
                 foreach (var entity in list)
                 {
+                    string reminder = "";
+                    foreach (var timeEntity in entity.TimeEntities)
+                    {
+                        reminder += $"{timeEntity.Time}\n";
+                    }
+                    
                     ret += $"ID: {entity.Id}\n" +
                            $"Name: {entity.Name}\n" +
                            $"Date: {entity.Date.ToShortDateString()}\n" +
                            $"Time: {entity.Date.TimeOfDay}\n" +
+                           $"Reminder:\n{reminder}"+
                            $"PostTo: {entity.ChannelToPostId} ({channels.FirstOrDefault(x=>x.Id==entity.ChannelToPostId)?.Name})\n\n";
+
+
+                    
                 }
                 
                 await ReplyAsync("",false,new EmbedBuilder(){Description = ret,Color = Color.Purple}.Build());

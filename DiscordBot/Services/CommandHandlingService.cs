@@ -77,7 +77,9 @@ namespace DiscordBot
                     {
                         if (!await MessageForEventSent(eventEntity,
                             DateTime.Now.Add(reminderTime.Time),
-                            $"{eventEntity.Name} is in {reminderTime.Time} !")) continue;
+                            $"{eventEntity.Name} is in about {reminderTime.Time} !\n" +
+                            $"on {eventEntity.Date.ToShortDateString()} " +
+                            $"{eventEntity.Date.ToShortTimeString()}")) continue;
 
                         eventEntity.TimeEntities.Remove(reminderTime);
                         await _eventRepository.Update(eventEntity);
