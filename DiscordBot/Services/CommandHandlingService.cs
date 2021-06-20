@@ -53,9 +53,9 @@ namespace DiscordBot
 
         private async void CheckForEvents(Object source, ElapsedEventArgs e)
         {
+            _eventTimer.Stop();
             try
             {
-                _eventTimer.Stop();
                 var eventList = await _eventRepository.GetAll();
                 if (eventList.Count < 1)
                 {
@@ -77,7 +77,7 @@ namespace DiscordBot
                     {
                         if (!await MessageForEventSent(eventEntity,
                             DateTime.Now.Add(reminderTime.Time),
-                            $"{eventEntity.Name} is in about {reminderTime.Time} !\n" +
+                            $"Event '{eventEntity.Name}' is in about {reminderTime.Time} !\n" +
                             $"on {eventEntity.Date.ToShortDateString()} " +
                             $"{eventEntity.Date.ToShortTimeString()}")) continue;
 
@@ -85,13 +85,13 @@ namespace DiscordBot
                         await _eventRepository.Update(eventEntity);
                     }
                 }
-                _eventTimer.Start();
             }
             catch (Exception exception)
             {
                 await LoggingService.Log(new LogMessage(LogSeverity.Critical, nameof(CommandHandlingService), "EventTimer",
                     exception));
             }
+            _eventTimer.Start();
         }
 
         private async Task<bool> MessageForEventSent(EventEntity entity,DateTime timeToSend, string message)
