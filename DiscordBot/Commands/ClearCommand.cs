@@ -4,11 +4,14 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using DiscordBot.Database;
+using Serilog;
 
 namespace DiscordBot.Modules
 {
     public class ClearCommand : ModuleBase
     {
+        private readonly ILogger _logger = Log.ForContext<CommandHandlingService>();
+        
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("clear")]
         [Alias("remove","delete")]
@@ -27,9 +30,7 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Warning,
-                    nameof(ClearCommand),
-                    e.Message,e));
+                _logger.Error(e,e.Message);
                 await ReplyAsync("wrong Parameter");
                 return;
             }
@@ -70,7 +71,7 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error,nameof(ClearCommand),e.Message,e));
+                _logger.Error(e,e.Message);
             }
           
         }

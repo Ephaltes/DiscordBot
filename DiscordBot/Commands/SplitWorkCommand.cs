@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Serilog;
 
 namespace DiscordBot.Modules
 {
     public class SplitWorkCommand : ModuleBase
     {
+        private readonly ILogger _logger = Log.ForContext<SplitWorkCommand>();
+        
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("splitwork")]
         [Alias("split")]
@@ -32,9 +35,7 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error,
-                    nameof(SplitWorkCommand),
-                    e.Message,e));
+                _logger.Error(e,e.Message);
                 await Context.Channel.SendMessageAsync("Wrong arguments");
                 return;
             }

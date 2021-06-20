@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using DiscordBot.Entity;
+using Serilog;
 
 namespace DiscordBot.Database
 {
@@ -11,6 +12,7 @@ namespace DiscordBot.Database
     public class EventRepository : IEventRepository
     {
         private readonly DatabaseContext _db;
+        private readonly ILogger _logger = Log.ForContext<EventRepository>();
         public EventRepository(DatabaseContext db)
         {
             _db = db;
@@ -36,7 +38,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(EventRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }
@@ -51,7 +53,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(EventRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }
@@ -70,7 +72,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(EventRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }

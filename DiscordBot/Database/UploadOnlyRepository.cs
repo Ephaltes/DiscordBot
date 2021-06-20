@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using DiscordBot.Entity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace DiscordBot.Database
 {
@@ -13,6 +13,7 @@ namespace DiscordBot.Database
     public class UploadOnlyRepository : IUploadOnlyRepository
     {
         private readonly DatabaseContext _db;
+        private readonly ILogger _logger = Log.ForContext<CommandHandlingService>();
 
         public UploadOnlyRepository(DatabaseContext db)
         {
@@ -50,7 +51,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(UploadOnlyRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }
@@ -65,7 +66,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(UploadOnlyRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }
@@ -84,7 +85,7 @@ namespace DiscordBot.Database
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(UploadOnlyRepository), e.Message, e));
+                _logger.Error(e,e.Message);
                 return false;
             }
         }

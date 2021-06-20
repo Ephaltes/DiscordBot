@@ -12,6 +12,7 @@ using Discord.WebSocket;
 using DiscordBot.Database;
 using DiscordBot.Entity;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace DiscordBot
 {
@@ -23,8 +24,10 @@ namespace DiscordBot
         private readonly IUploadOnlyRepository _uploadOnlyRepository;
         private readonly IEventRepository _eventRepository;
         private Timer _eventTimer;
+        private readonly ILogger _logger = Log.ForContext<CommandHandlingService>();
 
-        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands, IUploadOnlyRepository uploadOnlyRepository, IEventRepository eventRepository)
+        public CommandHandlingService(IServiceProvider services, DiscordSocketClient discord, CommandService commands,
+            IUploadOnlyRepository uploadOnlyRepository, IEventRepository eventRepository)
         {
             _services = services;
             _discord = discord;
@@ -34,7 +37,7 @@ namespace DiscordBot
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += CommandExecutedAsync;
-            
+
             // Hook MessageReceived so we can process each message to see
             // if it qualifies as a command.
             _discord.MessageReceived += MessageReceivedAsync;
@@ -47,7 +50,7 @@ namespace DiscordBot
             _eventTimer = new Timer();
             _eventTimer.AutoReset = false;
             _eventTimer.Enabled = true;
-            _eventTimer.Interval = 1000 * 15;// 15 sekunden
+            _eventTimer.Interval = 1000 * 15; // 15 sekunden
             _eventTimer.Elapsed += CheckForEvents;
         }
 
@@ -73,7 +76,8 @@ namespace DiscordBot
                         return;
                     }
 
-                    foreach (var reminderTime in eventEntity.TimeEntities.ToList()) //ToList Because we are modifiyng eventEntity
+                    foreach (var reminderTime in
+                        eventEntity.TimeEntities.ToList()) //ToList Because we are modifiyng eventEntity
                     {
                         if (!await MessageForEventSent(eventEntity,
                             DateTime.Now.Add(reminderTime.Time),
@@ -88,13 +92,13 @@ namespace DiscordBot
             }
             catch (Exception exception)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Critical, nameof(CommandHandlingService), "EventTimer",
-                    exception));
+                _logger.Error(exception,"Event Timer Error");
             }
+
             _eventTimer.Start();
         }
 
-        private async Task<bool> MessageForEventSent(EventEntity entity,DateTime timeToSend, string message)
+        private async Task<bool> MessageForEventSent(EventEntity entity, DateTime timeToSend, string message)
         {
             if (entity.Date < timeToSend)
             {
@@ -104,29 +108,31 @@ namespace DiscordBot
 
                 return true;
             }
+
             return false;
         }
-        
+
         public async Task InitializeAsync()
         {
             // Register modules that are public and inherit ModuleBase<T>.
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
-        
+
         private async Task<bool> IsMessageInUploadOnlyChannel(SocketMessage msg, IUploadOnlyRepository repository)
         {
             var channel = msg.Channel as SocketGuildChannel;
 
             var uploadOnlyEntity = await repository.GetByChannelId(channel.Id);
-            
-            
-            if (msg.Author.IsBot 
-                || uploadOnlyEntity == null 
-                ||  msg.Attachments.Count > 0)
+
+
+            if (msg.Author.IsBot
+                || uploadOnlyEntity == null
+                || msg.Attachments.Count > 0)
                 return false;
 
 
-            var channelToPost = channel.Guild.TextChannels.FirstOrDefault(x => x.Id == uploadOnlyEntity.ChannelToPostId);
+            var channelToPost =
+                channel.Guild.TextChannels.FirstOrDefault(x => x.Id == uploadOnlyEntity.ChannelToPostId);
 
             if (channelToPost == null)
             {
@@ -151,7 +157,7 @@ namespace DiscordBot
         {
             if (await IsMessageInUploadOnlyChannel(rawMessage, _uploadOnlyRepository))
                 return;
-            
+
             // Ignore system messages, or messages from other bots
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
@@ -186,5 +192,7 @@ namespace DiscordBot
             // the command failed, let's notify the user that something happened.
             await context.Channel.SendMessageAsync($"error: {result}");
         }
+        
+       
     }
 }

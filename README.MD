@@ -10,12 +10,39 @@
 !team <groupname> <number of teams> - Creates <number of Teams> and distributing all members of <groupname> equally into the teams
 
 ## appsettings.json Format
+```json
 {
-
-  "Bot": {
-  
-    "Token": "myToken"
-    
-   }
-  
+  "Serilog": {
+    "Using": [
+      "Serilog.Sinks.Console",
+      "Serilog.Sinks.File"
+    ],
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "{NewLine}{Timestamp:HH:mm:ss} [{Level}] ({SourceContext}) {Message}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "Logs/logs.txt",
+          "rollingInterval": "Day",
+          "outputTemplate": "{NewLine}{Timestamp:HH:mm:ss} [{Level}] ({SourceContext}) {Message}{NewLine}{Exception}"
+        }
+      }
+    ],
+    "Enrich": [
+      "FromLogContext"
+    ],
+    "Properties": {
+      "Application": "DiscordBot"
+    }
+  },
+  "ApiToken": "myApiKey",
+  "SqlitePath": "myDbName"
 }
+
+```

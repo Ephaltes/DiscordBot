@@ -4,11 +4,13 @@ using Discord;
 using Discord.Commands;
 using DiscordBot.Database;
 using DiscordBot.Entity;
+using Serilog;
 
 namespace DiscordBot.Modules
 {
     public class UploadOnlyCommand : ModuleBase
     {
+        private readonly ILogger _logger = Log.ForContext<UploadOnlyCommand>();
         private IUploadOnlyRepository _repository;
 
         public UploadOnlyCommand(IUploadOnlyRepository repository)
@@ -37,9 +39,7 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await LoggingService.Log(new LogMessage(LogSeverity.Warning,
-                    nameof(UploadOnlyCommand),
-                    e.Message,e));
+                _logger.Error(e,e.Message);
                 await ReplyAsync("wrong Parameter");
                 return;
             }
@@ -58,8 +58,7 @@ namespace DiscordBot.Modules
                 }
 
                 await ReplyAsync("something went wrong");
-                await LoggingService.Log(new LogMessage(LogSeverity.Error, nameof(UploadOnlyCommand),
-                    "Error adding Upload only"));
+                _logger.Error("Error adding upload only");
             }
             else
             {
