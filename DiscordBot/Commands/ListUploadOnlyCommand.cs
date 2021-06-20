@@ -18,8 +18,8 @@ namespace DiscordBot.Modules
             _repository = repository;
         }
 
-        [Command("listuploadonly")]
-        [Alias("listupload","lupload")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("lsupload")]
         public async Task ListUploadOnly()
         {
             try

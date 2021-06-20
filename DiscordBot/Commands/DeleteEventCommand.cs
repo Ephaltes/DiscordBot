@@ -17,8 +17,8 @@ namespace DiscordBot.Modules
             _repository = repository;
         }
 
-        [Command("deleteevent")]
-        [Alias("removeevent","devent","revent")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("delevent")]
         public async Task DeleteEvent(params string[] param)
         {
             try

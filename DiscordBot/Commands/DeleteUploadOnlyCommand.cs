@@ -16,9 +16,9 @@ namespace DiscordBot.Modules
         {
             _repository = repository;
         }
-
-        [Command("deleteuploadonly")]
-        [Alias("removeuploadonly","removeuplaad","deleteupload")]
+        
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("delupload")]
         public async Task DeleteEvent(params string[] param)
         {
             try

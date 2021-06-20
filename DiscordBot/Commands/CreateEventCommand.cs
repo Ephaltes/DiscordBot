@@ -18,8 +18,8 @@ namespace DiscordBot.Modules
             _repository = repository;
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("event")]
-        [Alias("reminder","remind","createevent","cevent","creminder")]
         public async Task CreateEvent(params string[] param)
         {
             try

@@ -47,7 +47,7 @@ namespace DiscordBot
             _eventTimer = new Timer();
             _eventTimer.AutoReset = false;
             _eventTimer.Enabled = true;
-            _eventTimer.Interval = 1000 * 10;// 10 sekunden
+            _eventTimer.Interval = 1000 * 15;// 15 sekunden
             _eventTimer.Elapsed += CheckForEvents;
         }
 

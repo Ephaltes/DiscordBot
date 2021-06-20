@@ -18,8 +18,8 @@ namespace DiscordBot.Modules
             _repository = repository;
         }
 
-        [Command("listevent")]
-        [Alias("levent","events")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("events")]
         public async Task ListEvents()
         {
             try
