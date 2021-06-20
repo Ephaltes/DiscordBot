@@ -16,4 +16,8 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV TZ=Europe/Berlin
+ENV LANG de_AT.UTF-8
+ENV LANGUAGE ${LANG}
+ENV LC_ALL ${LANG}
 ENTRYPOINT ["dotnet", "DiscordBot.dll"]
