@@ -65,7 +65,7 @@ namespace DiscordBot
 
                 foreach (var eventEntity in eventList)
                 {
-                    if (await MessageForEventSent(eventEntity, DateTime.Now,
+                    if (await MessageForEventSent(eventEntity, DateTime.Now.ToLocalTime(),
                         $"{eventEntity.Name} is now!"))
                     {
                         await _eventRepository.Delete(eventEntity.Id);
@@ -76,7 +76,7 @@ namespace DiscordBot
                     foreach (var reminderTime in eventEntity.TimeEntities.ToList()) //ToList Because we are modifiyng eventEntity
                     {
                         if (!await MessageForEventSent(eventEntity,
-                            DateTime.Now.Add(reminderTime.Time),
+                            DateTime.Now.ToLocalTime().Add(reminderTime.Time),
                             $"Event '{eventEntity.Name}' is in about {reminderTime.Time} !\n" +
                             $"on {eventEntity.Date.ToShortDateString()} " +
                             $"{eventEntity.Date.ToShortTimeString()}")) continue;

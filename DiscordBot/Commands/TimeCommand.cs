@@ -10,7 +10,7 @@ namespace DiscordBot.Modules
         [Command("time")]
         public async Task Time(params string[] amount)
         {
-            await ReplyAsync(DateTime.Now.ToString());
+            await ReplyAsync(DateTime.Now.ToLocalTime().ToString());
         }
     }
 }
