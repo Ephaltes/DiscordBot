@@ -11,6 +11,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Database;
 using DiscordBot.Entity;
+using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -81,7 +82,7 @@ namespace DiscordBot
                     {
                         if (!await MessageForEventSent(eventEntity,
                             DateTime.Now.Add(reminderTime.Time),
-                            $"Event '{eventEntity.Name}' is in about {reminderTime.Time} !\n" +
+                            $"Event '{eventEntity.Name}' is in about {reminderTime.Time.Humanize()} !\n" +
                             $"on {eventEntity.Date.ToShortDateString()} " +
                             $"{eventEntity.Date.ToShortTimeString()}")) continue;
 
