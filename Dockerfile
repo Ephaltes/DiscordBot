@@ -3,10 +3,9 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["DiscordBot.ConsoleApp/nuget.config", "DiscordBot.ConsoleApp/"]
-COPY ["DiscordBot.ConsoleApp/DiscordBot.ConsoleApp.csproj", "DiscordBot.ConsoleApp/"]
-RUN dotnet restore "DiscordBot.ConsoleApp/DiscordBot.ConsoleApp.csproj"
 COPY . .
+RUN dotnet restore "DiscordBot.ConsoleApp/DiscordBot.ConsoleApp.csproj"
+
 WORKDIR "/src/DiscordBot.ConsoleApp"
 RUN dotnet build "DiscordBot.ConsoleApp.csproj" -c Release -o /app/build
 
