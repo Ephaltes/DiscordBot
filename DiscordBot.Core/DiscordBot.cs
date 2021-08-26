@@ -48,7 +48,7 @@ namespace DiscordBot.Core
                 ReflectionHelper.GetClassesFromBaseClass<ApplicationCommandModule>();
 
             foreach (Type type in slashCommandList)
-                slash.RegisterCommands(type, 444956433633640468);
+                slash.RegisterCommands(type);
 
             client.MessageCreated += _messageHandler.MessageReceived;
 
