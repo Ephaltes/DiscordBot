@@ -354,3 +354,8 @@ appsettings.json
 
 #jetbrains
 .idea/
+
+*ncrunch*
+
+onlyForMigrations
+
