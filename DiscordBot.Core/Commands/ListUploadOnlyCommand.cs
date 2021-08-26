@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.Core.Entity;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Helper;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
@@ -21,7 +22,7 @@ namespace DiscordBot.Core.Commands
         public ListUploadOnlyCommand(IUploadOnlyRepository repository, ILogger logger)
         {
             _repository = repository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         [SlashRequireUserPermissions(Permissions.Administrator)]
@@ -30,6 +31,7 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                _logger.LogCallerInformation(context);
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
                 List<UploadOnlyEntity> list = await _repository.GetAllbyServerId(context.Guild.Id);
@@ -56,8 +58,7 @@ namespace DiscordBot.Core.Commands
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
-                _logger.Error(e.StackTrace);
+                _logger.Error(e, e.Message);
             }
         }
     }

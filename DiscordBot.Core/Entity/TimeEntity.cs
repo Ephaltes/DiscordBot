@@ -10,8 +10,9 @@ namespace DiscordBot.Core.Entity
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
         public TimeSpan Time { get; set; }
 
-        public virtual ICollection<EventEntity> EventEntities { get; set; }  = new List<EventEntity>();
+        public virtual ICollection<EventEntity> EventEntities { get; set; } = new List<EventEntity>();
     }
 }

@@ -15,7 +15,7 @@ namespace Discordbot.Infrastructure
         public TimeRepository(DatabaseContext db, ILogger logger)
         {
             _db = db;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         public async Task<TimeEntity?> GetByTimeSpan(TimeSpan timespan)

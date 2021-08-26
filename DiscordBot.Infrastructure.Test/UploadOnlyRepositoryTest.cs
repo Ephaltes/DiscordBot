@@ -1,5 +1,3 @@
-using Discordbot.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 
 namespace DiscordBot.Infrastructure.Test
@@ -14,7 +12,6 @@ namespace DiscordBot.Infrastructure.Test
         [Test]
         public void Get_Should_ReturnEntity()
         {
-
             Assert.Pass();
         }
     }

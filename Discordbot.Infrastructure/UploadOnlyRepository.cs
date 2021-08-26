@@ -18,7 +18,7 @@ namespace Discordbot.Infrastructure
         public UploadOnlyRepository(DatabaseContext db, ILogger logger)
         {
             _db = db;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         public async Task<UploadOnlyEntity?> Get(Guid id)

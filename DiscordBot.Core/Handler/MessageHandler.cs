@@ -16,7 +16,7 @@ namespace DiscordBot.Core.Handler
         public MessageHandler(IUploadOnlyRepository uploadOnlyRepository, ILogger logger)
         {
             _uploadOnlyRepository = uploadOnlyRepository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
         public async Task MessageReceived(DiscordClient client, MessageCreateEventArgs messageEvent)
         {

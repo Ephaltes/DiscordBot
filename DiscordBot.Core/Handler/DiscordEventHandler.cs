@@ -15,14 +15,14 @@ namespace DiscordBot.Core.Handler
 {
     public class DiscordEventHandler : IDiscordEventHandler
     {
+        private readonly DiscordClient _client;
         private readonly IEventRepository _eventRepository;
         private readonly Timer _eventTimer;
         private readonly ILogger _logger;
-        private readonly DiscordClient _client;
         public DiscordEventHandler(IEventRepository eventRepository, ILogger logger, DiscordClient client)
         {
             _eventRepository = eventRepository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
             _client = client;
 
             _eventTimer = new Timer();
@@ -61,12 +61,12 @@ namespace DiscordBot.Core.Handler
                     if (message != null)
                         await SendMessageToChannel(eventEntity, message);
                 }
-                
+
                 await DeleteExpiredEventsAndReminders(eventList);
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Event Timer Error");
+                _logger.Error(exception, exception.Message);
             }
 
             _eventTimer.Start();
@@ -86,7 +86,7 @@ namespace DiscordBot.Core.Handler
             if (entity.Date <= DateTime.Now)
                 return EmbeddedHelper.CreateDefaultEmbed($"{entity.Name} is now!");
 
-            foreach (var reminderTime in entity.TimeEntities.OrderByDescending(x=> x.Time))
+            foreach (var reminderTime in entity.TimeEntities.OrderByDescending(x => x.Time))
             {
                 string reminderString =
                     $"Event '{entity.Name}' is in about {reminderTime.Time.Humanize()} !\n" +
@@ -110,6 +110,7 @@ namespace DiscordBot.Core.Handler
                 if (entity.Date <= DateTime.Now)
                 {
                     await _eventRepository.Delete(entity);
+
                     continue;
                 }
 

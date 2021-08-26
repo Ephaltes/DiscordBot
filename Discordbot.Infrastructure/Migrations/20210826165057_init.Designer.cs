@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Discordbot.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20210826134925_init")]
+    [Migration("20210826165057_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

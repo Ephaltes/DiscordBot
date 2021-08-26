@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DiscordBot.Core.Extension;
 using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -16,7 +17,7 @@ namespace DiscordBot.Core.Commands
 
         public ClearCommand(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         [RequireGuild]
@@ -25,18 +26,28 @@ namespace DiscordBot.Core.Commands
         public async Task Clear(InteractionContext context,
             [Option("amount", "amount to delete")] long amount)
         {
-            if (amount < 1)
+            try
             {
-                await context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent("wrong Parameter"));
+                await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                _logger.LogCallerInformation(context);
 
-                return;
+                if (amount < 1)
+                {
+                    const string errorMessage = "wrong Parameter";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
+
+                    return;
+                }
+
+                _ = Task.Run(async () =>
+                    await DeleteTask(++amount,
+                        context)); //start in other thread and let it run in background till finish
             }
-
-            _ = Task.Run(async () =>
-                await DeleteTask(amount, context)); //start in other thread and let it run in background till finish
-
-            await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            catch (Exception e)
+            {
+                _logger.Error(e, e.Message);
+            }
         }
 
         private async Task DeleteTask(long amount, InteractionContext context)
@@ -45,9 +56,9 @@ namespace DiscordBot.Core.Commands
             {
                 const double limit = 100.0;
 
-                var rounds = Math.Ceiling(amount / limit);
+                double rounds = Math.Ceiling(amount / limit);
 
-                for (var i = 0; i < rounds; i++)
+                for (int i = 0; i < rounds; i++)
                 {
                     int tempAmount;
 
@@ -68,9 +79,6 @@ namespace DiscordBot.Core.Commands
                         await message.DeleteAsync();
                         Task.Delay(1000).Wait();
                     }
-
-                    await context.EditResponseAsync(
-                        new DiscordWebhookBuilder().WithContent($"Finished deleting {amount} Messages"));
                 }
             }
             catch (Exception e)

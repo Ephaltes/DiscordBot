@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using DiscordBot.Core.Entity;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -18,7 +19,7 @@ namespace DiscordBot.Core.Commands
         public DeleteUploadOnlyCommand(IUploadOnlyRepository repository, ILogger logger)
         {
             _repository = repository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         [SlashRequireUserPermissions(Permissions.Administrator)]
@@ -29,6 +30,7 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                _logger.LogCallerInformation(context);
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
                 UploadOnlyEntity? entity = await _repository.GetByChannelId(uploadChannel.Id);
@@ -41,13 +43,14 @@ namespace DiscordBot.Core.Commands
                     return;
                 }
 
+                const string errorMessage = "something went wrong";
                 await context.EditResponseAsync(
-                    new DiscordWebhookBuilder().WithContent("Error occured"));
+                    new DiscordWebhookBuilder().WithContent(errorMessage));
+                _logger.LogCallerInformation(context, errorMessage);
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
-                _logger.Error(e.StackTrace);
+                _logger.Error(e, e.Message);
             }
         }
     }

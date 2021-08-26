@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Helper;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -16,7 +17,7 @@ namespace DiscordBot.Core.Commands
         private readonly ILogger _logger;
         public SplitWorkCommand(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
 
@@ -29,6 +30,7 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                _logger.LogCallerInformation(context);
                 IEnumerable<DiscordMember> members = context.Guild.Members.Values;
 
                 List<DiscordMember> memberInRole = members
@@ -59,8 +61,7 @@ namespace DiscordBot.Core.Commands
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
-                _logger.Error(e.StackTrace);
+                _logger.Error(e, e.Message);
             }
         }
     }

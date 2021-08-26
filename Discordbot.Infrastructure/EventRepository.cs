@@ -16,7 +16,7 @@ namespace Discordbot.Infrastructure
         public EventRepository(DatabaseContext db, ILogger logger)
         {
             _db = db;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         public async Task<EventEntity?> Get(Guid id)
@@ -34,13 +34,11 @@ namespace Discordbot.Infrastructure
             try
             {
                 await _db.EventEntities.AddAsync(entity);
-                
+
                 foreach (TimeEntity timeEntity in entity.TimeEntities)
-                {
                     if (timeEntity.Id > 0)
                         _db.Attach(timeEntity);
-                }
-                
+
                 await _db.SaveChangesAsync();
 
                 return true;

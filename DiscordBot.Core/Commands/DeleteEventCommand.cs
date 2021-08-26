@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -17,7 +18,7 @@ namespace DiscordBot.Core.Commands
         public DeleteEventCommand(IEventRepository repository, ILogger logger)
         {
             _repository = repository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
         [SlashRequireUserPermissions(Permissions.Administrator)]
@@ -28,6 +29,7 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                _logger.LogCallerInformation(context);
                 Guid eventid = new Guid(eventId);
 
                 if (await _repository.Delete(eventid))
@@ -38,12 +40,13 @@ namespace DiscordBot.Core.Commands
                     return;
                 }
 
+                const string errorMessage = "something went wrong";
                 await context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent("Error occurred"));
+                    new DiscordInteractionResponseBuilder().WithContent(errorMessage));
+                _logger.LogCallerInformation(context, errorMessage);
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
                 _logger.Error(e.StackTrace);
             }
         }

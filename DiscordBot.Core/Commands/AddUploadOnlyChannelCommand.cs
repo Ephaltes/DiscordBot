@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using DiscordBot.Core.Entity;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -18,7 +19,7 @@ namespace DiscordBot.Core.Commands
         public AddUploadOnlyChannelCommand(IUploadOnlyRepository repository, ILogger logger)
         {
             _repository = repository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
         }
 
 
@@ -32,12 +33,18 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                string errorMessage = "";
+
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                _logger.LogCallerInformation(context);
 
                 if (uploadChannel.Type != ChannelType.Text || postToChannel.Type != ChannelType.Text)
                 {
+                    errorMessage = "Channel is not a TextChannel";
                     await context.EditResponseAsync(
-                        new DiscordWebhookBuilder().WithContent("Channel is not a TextChannel"));
+                        new DiscordWebhookBuilder().WithContent(errorMessage));
+
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
@@ -60,18 +67,20 @@ namespace DiscordBot.Core.Commands
                         return;
                     }
 
-                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("something went wrong"));
-                    _logger.Error("Error adding upload only");
+                    errorMessage = "something went wrong";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
                 }
                 else
                 {
-                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Channel already in List"));
+                    errorMessage = "Channel already in List";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
                 }
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
-                _logger.Error(e.StackTrace);
+                _logger.Error(e, e.Message);
             }
         }
     }

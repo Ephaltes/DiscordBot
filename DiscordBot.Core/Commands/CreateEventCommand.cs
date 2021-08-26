@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBot.Core.Entity;
+using DiscordBot.Core.Extension;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -21,7 +22,7 @@ namespace DiscordBot.Core.Commands
         public CreateEventCommand(IEventRepository eventRepository, ILogger logger, ITimeRepository timeRepository)
         {
             _eventRepository = eventRepository;
-            _logger = logger;
+            _logger = logger.ForContext(GetType());
             _timeRepository = timeRepository;
         }
 
@@ -38,41 +39,54 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
+                string errorMessage = "";
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                _logger.LogCallerInformation(context);
 
                 if (string.IsNullOrEmpty(eventDate) || !DateTime.TryParse(eventDate, out DateTime parsedDate))
                 {
-                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wrong Date Format"));
+                    errorMessage = "Wrong Date Format";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
 
                 if (string.IsNullOrEmpty(eventTime) || !TimeSpan.TryParse(eventTime, out TimeSpan parsedTime))
                 {
-                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wrong Time Format"));
+                    errorMessage = "Wrong Time Format";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
 
                 if (parsedDate.Add(parsedTime) < DateTime.Now)
                 {
+                    errorMessage = "Date has to be in the future";
                     await context.EditResponseAsync(
-                        new DiscordWebhookBuilder().WithContent("Date has to be in the future"));
+                        new DiscordWebhookBuilder().WithContent(errorMessage));
+
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
 
                 if (string.IsNullOrEmpty(eventName))
                 {
-                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("EventName is empty"));
+                    errorMessage = "EventName is empty";
+                    await context.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
 
                 if (eventChannel.Type != ChannelType.Text)
                 {
+                    errorMessage = "Channel is not a TextChannel";
                     await context.EditResponseAsync(
-                        new DiscordWebhookBuilder().WithContent("Channel is not a TextChannel"));
+                        new DiscordWebhookBuilder().WithContent(errorMessage));
+                    _logger.LogCallerInformation(context, errorMessage);
 
                     return;
                 }
@@ -88,8 +102,10 @@ namespace DiscordBot.Core.Commands
                 {
                     if (!TimeSpanParser.TryParse(reminder, out TimeSpan parsedReminderTime))
                     {
+                        errorMessage = "Wrong Reminder Format";
                         await context.EditResponseAsync(
-                            new DiscordWebhookBuilder().WithContent("Wrong Reminder Format"));
+                            new DiscordWebhookBuilder().WithContent(errorMessage));
+                        _logger.LogCallerInformation(context, errorMessage);
 
                         return;
                     }
@@ -117,8 +133,7 @@ namespace DiscordBot.Core.Commands
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
-                _logger.Error(e.StackTrace);
+                _logger.Error(e, e.Message);
             }
         }
     }
