@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Discordbot.Infrastructure
 {
-    public class DatabaseContext : DbContext
+    public sealed class DatabaseContext : DbContext
     {
         public DbSet<UploadOnlyEntity> UploadOnlyEntities { get; set; }
         public DbSet<EventEntity> EventEntities { get; set; }
