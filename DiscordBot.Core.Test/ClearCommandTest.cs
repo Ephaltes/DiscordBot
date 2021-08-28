@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace DiscordBot.Core.Test
@@ -11,7 +10,7 @@ namespace DiscordBot.Core.Test
         }
 
         [Test]
-        public async Task Clear_Should_ReturnErrorMessage_WrongParameterAmount()
+        public void Clear_Should_ReturnErrorMessage_WrongParameterAmount()
         {
         }
     }

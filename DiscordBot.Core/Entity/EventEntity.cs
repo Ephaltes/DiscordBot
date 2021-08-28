@@ -11,7 +11,7 @@ namespace DiscordBot.Core.Entity
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public DateTime Date { get; set; }
         public ulong ChannelToPostId { get; set; }
 

@@ -53,10 +53,10 @@ namespace DiscordBot.Core.Handler
 
                 foreach (var eventEntity in eventList)
                 {
-                    if (!await IsTimeToSendMessageForEvent(eventEntity))
+                    if (!IsTimeToSendMessageForEvent(eventEntity))
                         continue;
 
-                    DiscordEmbed? message = await CreateMessageForEvent(eventEntity);
+                    DiscordEmbed? message = CreateMessageForEvent(eventEntity);
 
                     if (message != null)
                         await SendMessageToChannel(eventEntity, message);
@@ -72,7 +72,7 @@ namespace DiscordBot.Core.Handler
             _eventTimer.Start();
         }
 
-        public async Task<bool> IsTimeToSendMessageForEvent(EventEntity entity)
+        public bool IsTimeToSendMessageForEvent(EventEntity entity)
         {
             if (entity.Date >= DateTime.Now &&
                 entity.TimeEntities.FirstOrDefault(time => DateTime.Now.Add(time.Time) >= entity.Date) == null)
@@ -81,7 +81,7 @@ namespace DiscordBot.Core.Handler
             return true;
         }
 
-        public async Task<DiscordEmbed?> CreateMessageForEvent(EventEntity entity)
+        public DiscordEmbed? CreateMessageForEvent(EventEntity entity)
         {
             if (entity.Date <= DateTime.Now)
                 return EmbeddedHelper.CreateDefaultEmbed($"{entity.Name} is now!");

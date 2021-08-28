@@ -10,8 +10,8 @@ namespace DiscordBot.Core.Interfaces
     {
         public Task StartPolling();
         public void CheckForEvents(object source, ElapsedEventArgs e);
-        public Task<bool> IsTimeToSendMessageForEvent(EventEntity entity);
-        public Task<DiscordEmbed?> CreateMessageForEvent(EventEntity entity);
+        public bool IsTimeToSendMessageForEvent(EventEntity entity);
+        public DiscordEmbed? CreateMessageForEvent(EventEntity entity);
         public Task DeleteExpiredEventsAndReminders(ICollection<EventEntity> entityList);
         public Task SendMessageToChannel(EventEntity entity, DiscordEmbed discordEmbed);
     }

@@ -39,7 +39,7 @@ namespace DiscordBot.Core.Commands
         {
             try
             {
-                string errorMessage = "";
+                string errorMessage;
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
                 _logger.LogCallerInformation(context);
 

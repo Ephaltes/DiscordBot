@@ -18,9 +18,11 @@ namespace DiscordBot.Core.Handler
             _uploadOnlyRepository = uploadOnlyRepository;
             _logger = logger.ForContext(GetType());
         }
-        public async Task MessageReceived(DiscordClient client, MessageCreateEventArgs messageEvent)
+        public Task MessageReceived(DiscordClient client, MessageCreateEventArgs messageEvent)
         {
             _ = Task.Run(async () => await DeleteIfMessageIsInUploadOnlyChannel(messageEvent));
+
+            return Task.CompletedTask;
         }
 
         public async Task DeleteIfMessageIsInUploadOnlyChannel(MessageCreateEventArgs messageEvent)
