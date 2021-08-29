@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace DiscordBot.Configuration.Module
@@ -13,7 +14,9 @@ namespace DiscordBot.Configuration.Module
                 .Enrich.FromLogContext()
                 .CreateLogger();
 
+
             services.AddSingleton(Log.Logger);
+            services.AddSingleton(new LoggerFactory().AddSerilog());
 
             return services;
         }

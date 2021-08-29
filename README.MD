@@ -12,7 +12,13 @@
       "Serilog.Sinks.Console",
       "Serilog.Sinks.File"
     ],
-    "MinimumLevel": "Information",
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      }
+    },
     "WriteTo": [
       {
         "Name": "Console",

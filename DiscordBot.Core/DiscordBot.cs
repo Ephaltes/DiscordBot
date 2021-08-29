@@ -8,7 +8,8 @@ using DSharpPlus;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using ILogger = Serilog.ILogger;
 
 namespace DiscordBot.Core
 {
@@ -30,7 +31,8 @@ namespace DiscordBot.Core
             {
                 Token = _configuration.GetSection("ApiToken").Value,
                 TokenType = TokenType.Bot,
-                Intents = DiscordIntents.All
+                Intents = DiscordIntents.All,
+                LoggerFactory = _services.GetRequiredService<ILoggerFactory>()
             };
 
             DiscordClient client = new DiscordClient(discordConfig);
@@ -48,7 +50,7 @@ namespace DiscordBot.Core
                 ReflectionHelper.GetClassesFromBaseClass<ApplicationCommandModule>();
 
             foreach (Type type in slashCommandList)
-                slash.RegisterCommands(type);
+                slash.RegisterCommands(type, 444956433633640468);
 
             client.MessageCreated += _messageHandler.MessageReceived;
 

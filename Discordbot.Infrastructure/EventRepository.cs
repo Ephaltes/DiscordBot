@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.Core.Entity;
 using DiscordBot.Core.Interfaces;
@@ -22,6 +23,11 @@ namespace Discordbot.Infrastructure
         public async Task<EventEntity?> Get(Guid id)
         {
             return await _db.EventEntities.FindAsync(id);
+        }
+
+        public async Task<List<EventEntity>> GetAllByServerId(ulong id)
+        {
+            return await _db.EventEntities.Where(e => e.ServerId == id).ToListAsync();
         }
 
         public async Task<List<EventEntity>> GetAll()

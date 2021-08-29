@@ -9,8 +9,8 @@ namespace DiscordBot.Core.Interfaces
     public interface IEventRepository
     {
         public Task<EventEntity?> Get(Guid id);
-
         public Task<List<EventEntity>> GetAll();
+        public Task<List<EventEntity>> GetAllByServerId(ulong id);
 
         public Task<bool> Add(EventEntity entity);
 
