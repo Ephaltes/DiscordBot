@@ -5,6 +5,7 @@ using DiscordBot.Core.Handler;
 using DiscordBot.Core.Helper;
 using DiscordBot.Core.Interfaces;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,8 @@ namespace DiscordBot.Core
             {
                 Services = _services
             });
+
+            await client.BulkOverwriteGlobalApplicationCommandsAsync(Array.Empty<DiscordApplicationCommand>());
 
             IEnumerable<Type> slashCommandList =
                 ReflectionHelper.GetClassesFromBaseClass<ApplicationCommandModule>();
