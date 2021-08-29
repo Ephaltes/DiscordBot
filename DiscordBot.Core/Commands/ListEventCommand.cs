@@ -32,7 +32,7 @@ namespace DiscordBot.Core.Commands
             try
             {
                 _logger.LogCallerInformation(context);
-                List<EventEntity> list = await _repository.GetAll();
+                List<EventEntity> list = await _repository.GetAllByServerId(context.Guild.Id);
 
                 if (list.Count < 1)
                 {
