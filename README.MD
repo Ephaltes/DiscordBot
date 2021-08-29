@@ -1,5 +1,9 @@
 # DiscordBot
 
+## Bot Privileges
+- Presence Intent
+- Server Members Intent
+
 ## appsettings.json Format
 ```json
 {
