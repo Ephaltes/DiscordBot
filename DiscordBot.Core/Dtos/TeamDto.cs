@@ -21,7 +21,7 @@ namespace DiscordBot.Core.Dtos
             {
                 TeamAmount = Convert.ToInt32(teamAmount);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 TeamAmount = null;
             }

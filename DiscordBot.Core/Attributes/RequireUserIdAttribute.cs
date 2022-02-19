@@ -5,7 +5,7 @@ namespace DiscordBot.Core.Attributes;
 
 public class RequireUserIdAttribute : SlashCheckBaseAttribute
 {
-    public ulong UserId;
+    private readonly ulong UserId;
 
     public RequireUserIdAttribute(ulong userId)
     {
@@ -14,9 +14,6 @@ public class RequireUserIdAttribute : SlashCheckBaseAttribute
 
     public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        if (ctx.User.Id == UserId)
-            return true;
-
-        return false;
+        return ctx.User.Id == UserId;
     }
 }

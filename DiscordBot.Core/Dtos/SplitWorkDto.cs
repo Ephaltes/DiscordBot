@@ -21,7 +21,7 @@ namespace DiscordBot.Core.Dtos
             {
                 TotalWorkTasks = Convert.ToInt32(totalWorkTasks);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 TotalWorkTasks = null;
             }
