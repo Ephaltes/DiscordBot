@@ -37,7 +37,7 @@ namespace DiscordBot.Core.Handler
             await Task.Delay(-1);
         }
 
-        public async void CheckForEvents(object source, ElapsedEventArgs e)
+        public async void CheckForEvents(object? source, ElapsedEventArgs e)
         {
             _eventTimer.Stop();
             try

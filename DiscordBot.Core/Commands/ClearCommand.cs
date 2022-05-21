@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBot.Core.Extension;
 using DSharpPlus;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
@@ -20,7 +19,6 @@ namespace DiscordBot.Core.Commands
             _logger = logger.ForContext(GetType());
         }
 
-        [RequireGuild]
         [SlashRequirePermissions(Permissions.Administrator)]
         [SlashCommand("Clear", "Deletes x Messages")]
         public async Task Clear(InteractionContext context,
